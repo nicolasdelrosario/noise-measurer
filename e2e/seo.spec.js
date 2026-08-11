@@ -9,6 +9,8 @@ test("publishes complete search and social metadata", async ({ page, request }) 
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", SITE_URL);
   await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", SITE_URL);
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", `${SITE_URL}social-card.png`);
+  await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute("content", "1741");
+  await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute("content", "908");
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
 
   const structuredData = JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
@@ -24,4 +26,11 @@ test("publishes complete search and social metadata", async ({ page, request }) 
   expect(socialCard.ok()).toBe(true);
   expect(socialCard.headers()["content-type"]).toContain("image/png");
   expect((await socialCard.body()).byteLength).toBeGreaterThan(10_000);
+  const dimensions = await page.evaluate(() => new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    image.onerror = reject;
+    image.src = "/social-card.png";
+  }));
+  expect(dimensions).toEqual({ width: 1741, height: 908 });
 });
