@@ -37,6 +37,10 @@ La aplicación SHALL mostrar en pantalla completa el nivel actual en dB, el esta
 - **WHEN** el estado cambia a `Demasiado ruido` mientras el monitor está en pantalla completa
 - **THEN** se muestra un aviso visual grande y centrado sin emitir sonido
 
+#### Scenario: Controles fullscreen en móvil
+- **WHEN** el monitor está en pantalla completa en un viewport móvil
+- **THEN** el estado y las métricas se organizan sin solaparse y la acción `Salir` permanece completamente visible dentro del área segura
+
 #### Scenario: Salida de fullscreen
 - **WHEN** el usuario pulsa `Escape` o la acción de salida
 - **THEN** se restaura la interfaz completa sin detener el monitor ni liberar el micrófono

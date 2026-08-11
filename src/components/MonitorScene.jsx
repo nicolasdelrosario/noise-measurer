@@ -27,7 +27,7 @@ export function MonitorScene({ level, volume, alert, active, status, stateCode, 
     <div className="face-field">
       <canvas ref={canvasRef} className="monitor-canvas" aria-hidden="true" />
       {alert && <div className="fullscreen-alert" role="alert">Demasiado ruido</div>}
-      <div className="fullscreen-status" role="status" aria-live="polite"><strong>{alert ? "Demasiado ruido" : status}</strong><span>{active && Number.isFinite(level) ? `${level.toFixed(1)} dB` : "-- dB"}</span><span>Límite {limit} dB</span><span>Sensibilidad {sensitivity}</span><button className="fullscreen-exit" type="button" onClick={toggleFullscreen}>Salir</button></div>
+      <div className="fullscreen-status" role="status" aria-live="polite"><strong>{alert ? "Demasiado ruido" : status}</strong><div className="fullscreen-metrics"><span>{active && Number.isFinite(level) ? `${level.toFixed(1)} dB` : "-- dB"}</span><span>Límite {limit} dB</span><span>Sensibilidad {sensitivity}</span></div><button className="fullscreen-exit" type="button" onClick={toggleFullscreen}>Salir</button></div>
     </div>
     <div className="monitor-status-row">
       <div><p className="eyebrow">Estado del aula</p><h2 id="monitor-status" aria-live="polite">{status}</h2></div>

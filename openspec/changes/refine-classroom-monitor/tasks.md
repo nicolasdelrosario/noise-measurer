@@ -60,3 +60,9 @@
 - [x] 10.1 Añadir favicon embebido con una carita amarilla feliz.
 - [x] 10.2 Separar verticalmente número, nombre y estado de las zonas compactas del mapa.
 - [x] 10.3 Verificar con Playwright que `Tópico` y `Jardín / áreas verdes` no solapan `sin datos`.
+
+## 11. Fullscreen móvil
+
+- [x] 11.1 Organizar estado, métricas y acción de salida en una cuadrícula móvil de dos filas.
+- [x] 11.2 Respetar las áreas seguras superior, izquierda y derecha.
+- [x] 11.3 Verificar con Playwright que `Salir` permanece dentro del viewport y no se solapa con las métricas.

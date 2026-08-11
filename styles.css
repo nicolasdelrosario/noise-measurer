@@ -131,6 +131,7 @@ td small { color: var(--color-muted); }
 .monitor-card:fullscreen .face-field { inset: 0; }
 .monitor-card:fullscreen .fullscreen-status { position: absolute; inset: 1.25rem 1.25rem auto; display: flex; align-items: center; gap: 1rem; color: var(--color-paper); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .monitor-card:fullscreen .fullscreen-status strong { margin-right: auto; color: var(--color-accent); }
+.monitor-card:fullscreen .fullscreen-metrics { display: flex; align-items: center; gap: 1rem; }
 .monitor-card:fullscreen .fullscreen-status span { color: var(--color-paper); font-size: 0.7rem; }
 .monitor-card:fullscreen .fullscreen-alert { position: absolute; z-index: 2; inset: 50% auto auto 50%; display: block; width: min(90vw, 12ch); padding: 0.25em 0.4em; transform: translate(-50%, -50%); background: color-mix(in srgb, var(--color-red) 88%, transparent); color: white; font: 900 clamp(3.5rem, 12vw, 10rem)/0.82 var(--font-display); letter-spacing: -0.05em; text-align: center; text-transform: uppercase; }
 .fullscreen-exit { min-height: 2.75rem; padding: 0.55rem 0.8rem; border: 1px solid var(--color-paper); background: transparent; color: var(--color-paper); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
@@ -145,6 +146,10 @@ td small { color: var(--color-muted); }
   .mapping-toolbar { grid-template-columns: 1fr auto; }.toolbar-actions { grid-column: 1 / -1; }.toolbar-reading { grid-column: 2; grid-row: 1; }
   .measurement-form { grid-template-columns: 1fr 1fr; }.measurement-form .form-heading { grid-column: 1 / -1; }.measurement-form .button { grid-column: 1 / -1; }
   .map-layout { grid-template-columns: 1fr; }.map-legend { display: flex; flex-wrap: wrap; gap: 0.75rem; }.map-legend .eyebrow { width: 100%; margin-bottom: 0; }.map-legend div { margin-bottom: 0; }
+  .monitor-card:fullscreen .fullscreen-status { inset: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) auto max(0.75rem, env(safe-area-inset-left)); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.45rem 0.75rem; }
+  .monitor-card:fullscreen .fullscreen-status strong { grid-column: 1; margin: 0; }
+  .monitor-card:fullscreen .fullscreen-metrics { grid-column: 1; display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; }
+  .monitor-card:fullscreen .fullscreen-exit { grid-column: 2; grid-row: 1 / span 2; }
 }
 @media (max-width: 480px) {
   .site-header { padding-top: 1.25rem; }.intro-strip { grid-template-columns: 1fr; gap: 0.6rem; }.mode-nav { gap: 1rem; overflow-x: auto; }

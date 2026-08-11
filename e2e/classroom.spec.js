@@ -19,7 +19,7 @@ test.describe("Modo aula", () => {
     await expect(page.getByLabel("Sensibilidad visual")).toHaveValue("80");
   });
 
-  test("shows monitor details in fullscreen when supported", async ({ page }) => {
+  test("shows monitor details in fullscreen when supported", async ({ page }, testInfo) => {
     await page.goto("/");
     const monitor = page.locator(".monitor-card");
     const fullscreenButton = page.getByRole("button", { name: "Pantalla completa" });
@@ -31,7 +31,21 @@ test.describe("Modo aula", () => {
     await expect(monitor).toHaveCSS("background-color", "rgb(22, 27, 22)");
     await expect(monitor.getByText(/Límite 70 dB/)).toBeVisible();
     await expect(monitor.getByText(/Sensibilidad 50/)).toBeVisible();
-    await monitor.getByRole("button", { name: "Salir" }).click();
+    const exit = monitor.getByRole("button", { name: "Salir" });
+    if (testInfo.project.name === "mobile") {
+      const viewport = page.viewportSize();
+      const [statusBox, metricsBox, exitBox] = await Promise.all([
+        monitor.locator(".fullscreen-status").boundingBox(),
+        monitor.locator(".fullscreen-metrics").boundingBox(),
+        exit.boundingBox(),
+      ]);
+      expect(statusBox.x).toBeGreaterThanOrEqual(0);
+      expect(statusBox.x + statusBox.width).toBeLessThanOrEqual(viewport.width);
+      expect(exitBox.x + exitBox.width).toBeLessThanOrEqual(viewport.width);
+      expect(exitBox.y + exitBox.height).toBeLessThanOrEqual(viewport.height);
+      expect(exitBox.x).toBeGreaterThanOrEqual(metricsBox.x + metricsBox.width - 1);
+    }
+    await exit.click();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: "Pantalla completa" })).toBeVisible();
   });
