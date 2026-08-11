@@ -8,7 +8,7 @@ test("publishes complete search and social metadata", async ({ page, request }) 
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /Monitor visual de ruido para aulas/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", SITE_URL);
   await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", SITE_URL);
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", `${SITE_URL}social-card.png`);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", `${SITE_URL}app-preview.png`);
   await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute("content", "1741");
   await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute("content", "908");
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
@@ -22,7 +22,7 @@ test("publishes complete search and social metadata", async ({ page, request }) 
   const sitemap = await request.get("/sitemap.xml");
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).toContain(`<loc>${SITE_URL}</loc>`);
-  const socialCard = await request.get("/social-card.png");
+  const socialCard = await request.get("/app-preview.png");
   expect(socialCard.ok()).toBe(true);
   expect(socialCard.headers()["content-type"]).toContain("image/png");
   expect((await socialCard.body()).byteLength).toBeGreaterThan(10_000);
@@ -30,7 +30,7 @@ test("publishes complete search and social metadata", async ({ page, request }) 
     const image = new Image();
     image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
     image.onerror = reject;
-    image.src = "/social-card.png";
+    image.src = "/app-preview.png";
   }));
   expect(dimensions).toEqual({ width: 1741, height: 908 });
 });
