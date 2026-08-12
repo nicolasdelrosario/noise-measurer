@@ -163,7 +163,7 @@ td small { color: var(--color-muted); }
   .monitor-card:fullscreen .fullscreen-status strong { grid-column: 1; margin: 0; }
   .monitor-card:fullscreen .fullscreen-metrics { grid-column: 1; display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; }
   .monitor-card:fullscreen .fullscreen-exit { grid-column: 2; grid-row: 1 / span 2; }
-  .monitor-card:fullscreen .fullscreen-alert { width: min(88vw, 12ch); font-size: clamp(2.7rem, 13vw, 5rem); }
+  .fullscreen-alert { display: none; }
 }
 @media (max-width: 480px) {
   .site-header { padding-top: var(--space-3); }.intro-strip { grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }.mode-nav { gap: var(--space-3); overflow-x: auto; }

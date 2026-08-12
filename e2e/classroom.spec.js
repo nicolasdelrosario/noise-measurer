@@ -29,7 +29,7 @@ test.describe("Modo aula", () => {
     await expect(page.locator(".monitor-canvas")).toHaveAttribute("data-emoji-count", /\d+/);
   });
 
-  test("shows a compact alert and sounds once per alert cycle", async ({ page }) => {
+  test("shows the alert state and sounds once per alert cycle", async ({ page }, testInfo) => {
     await page.addInitScript(() => {
       let amplitude = 0.01;
       let alertStarts = 0;
@@ -67,7 +67,12 @@ test.describe("Modo aula", () => {
     await page.goto("/");
     await page.getByRole("button", { name: /Iniciar monitor/ }).click();
     await page.evaluate(() => window.__setClassroomAmplitude(0.5));
-    await expect(page.getByRole("alert")).toBeVisible({ timeout: 4000 });
+    if (testInfo.project.name === "mobile") {
+      await expect(page.getByRole("heading", { name: "Demasiado ruido" })).toBeVisible({ timeout: 4000 });
+      await expect(page.getByRole("alert")).toHaveCount(0);
+    } else {
+      await expect(page.getByRole("alert")).toBeVisible({ timeout: 4000 });
+    }
     await expect(page.locator(".monitor-card")).toHaveAttribute("data-alert", "true");
     await expect.poll(() => page.evaluate(() => window.__getAlertStarts())).toBe(1);
     await page.waitForTimeout(500);
