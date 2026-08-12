@@ -137,7 +137,8 @@ export function useEmojiPhysics(canvasRef, { volume = 0, sensitivity }) {
       const frameScale = 60 / clamp(scene.fps, 30, isMobile ? 120 : 60);
       context.clearRect(0, 0, scene.width, scene.height);
       if (!reduced) stepPhysics(scene, frameScale, scene.volume);
-      context.font = `${scene.bodies[0]?.radius * 2 || 44}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+      const emojiFont = getComputedStyle(canvas).getPropertyValue("--font-emoji").trim() || "sans-serif";
+      context.font = `${scene.bodies[0]?.radius * 2 || 44}px ${emojiFont}`;
       context.textAlign = "center"; context.textBaseline = "middle";
       scene.bodies.forEach((body) => { context.save(); context.translate(body.x, body.y + 1); context.rotate(body.angle * Math.PI / 180); context.fillText(body.emoji, 0, 0); context.restore(); });
       scene.frame = requestAnimationFrame(frame);

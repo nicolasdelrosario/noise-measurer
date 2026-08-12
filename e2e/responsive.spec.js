@@ -6,5 +6,6 @@ test("the classroom view has no horizontal overflow at Hallmark widths", async (
     await page.setViewportSize({ width, height: 800 });
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await expect(page.getByRole("button", { name: /Iniciar monitor/ })).toBeVisible();
+    await expect.poll(() => page.getByRole("button").evaluateAll((buttons) => buttons.every((button) => button.scrollHeight <= button.clientHeight + 2))).toBe(true);
   }
 });

@@ -115,7 +115,7 @@ test.describe("Modo aula", () => {
       return;
     }
     await fullscreenButton.click();
-    await expect(monitor).toHaveCSS("background-color", "rgb(22, 27, 22)");
+    await expect(monitor).toHaveCSS("background-color", "oklch(0.2 0.025 125)");
     await expect(monitor.getByText(/Límite 70 dB/)).toBeVisible();
     await expect(monitor.getByText(/Sensibilidad 50/)).toBeVisible();
     const exit = monitor.getByRole("button", { name: "Salir" });
