@@ -74,3 +74,11 @@
 - [x] 12.3 Detener el sonido al detener la captura y probar reproducción, bloqueo de solapamiento y rearmado.
 - [x] 12.4 Admitir `webkitAudioContext` y continuar la captura cuando `resume()` sea rechazado inicialmente.
 - [x] 12.5 Verificar en Playwright el inicio completo con micrófono y contexto de audio sintéticos.
+
+## 13. Resolución de auditoría Hallmark
+
+- [x] 13.1 Mostrar una alerta roja compacta en la tarjeta normal y conservar el aviso grande solo en fullscreen.
+- [x] 13.2 Añadir control persistente de sonido y estados activo, apagado y bloqueado.
+- [x] 13.3 Reanudar el contexto al reproducir, mantener la alerta visual si falla y evitar anuncios accesibles duplicados.
+- [x] 13.4 Mostrar `Señal saturada` sin congelar la lectura.
+- [x] 13.5 Mover los colores literales del monitor y estados al sistema de tokens.

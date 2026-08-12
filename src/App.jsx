@@ -5,12 +5,13 @@ import { DEFAULT_LIMIT, DEFAULT_SENSITIVITY, average, createRecord, validateLimi
 import { useMicrophone } from "./hooks/useMicrophone.js";
 import { usePersistentState } from "./hooks/usePersistentState.js";
 
-const KEYS = { limit: "school-noise-limit", sensitivity: "school-noise-sensitivity", records: "school-noise-records" };
+const KEYS = { limit: "school-noise-limit", sensitivity: "school-noise-sensitivity", sound: "school-noise-sound", records: "school-noise-records" };
 
 export default function App() {
   const [mode, setMode] = useState("classroom");
   const [limit, setLimit] = usePersistentState(KEYS.limit, DEFAULT_LIMIT);
   const [sensitivity, setSensitivity] = usePersistentState(KEYS.sensitivity, DEFAULT_SENSITIVITY);
+  const [soundEnabled, setSoundEnabled] = usePersistentState(KEYS.sound, true);
   const [records, setRecords] = usePersistentState(KEYS.records, []);
   const microphone = useMicrophone();
   const samplesRef = useRef([]);
@@ -30,7 +31,7 @@ export default function App() {
   useEffect(() => {
     if (!microphone.sample) return;
     const sample = microphone.sample;
-    if (sample.peak >= 0.999) return;
+    const saturated = sample.peak >= 0.999;
     if (microphone.mode === "mapping" && sample.rms < 0.0001) {
       setMeasurement((current) => ({ ...current, status: "Señal demasiado baja" }));
       return;
@@ -43,7 +44,7 @@ export default function App() {
       if (current >= limit) { belowSince.current = 0; if (!redSince.current) redSince.current = now; }
       else { redSince.current = 0; if (!belowSince.current) belowSince.current = now; }
       const alert = monitor.alert ? !(belowSince.current && now - belowSince.current >= 2000) : Boolean(redSince.current && now - redSince.current >= 1000);
-      setMonitor({ level: current, alert, status: alert ? "Demasiado ruido" : "Nivel adecuado", stateCode: alert ? "alerta" : "adecuado" });
+      setMonitor({ level: current, alert, status: saturated ? "Señal saturada" : alert ? "Demasiado ruido" : "Nivel adecuado", stateCode: saturated ? "saturada" : alert ? "alerta" : "adecuado" });
     }
     if (microphone.mode === "mapping") {
       const ready = now - microphone.startedAt >= 5000;
@@ -52,9 +53,9 @@ export default function App() {
   }, [microphone.sample, microphone.mode, microphone.startedAt, limit, monitor.alert]);
 
   useEffect(() => {
-    if (monitor.alert && !alertSounded.current) microphone.playAlert();
+    if (monitor.alert && soundEnabled && !alertSounded.current) void microphone.playAlert();
     alertSounded.current = monitor.alert;
-  }, [microphone.playAlert, monitor.alert]);
+  }, [microphone.playAlert, monitor.alert, soundEnabled]);
 
   useEffect(() => {
     if (!microphone.mode) {
@@ -80,6 +81,11 @@ export default function App() {
 
   function changeSensitivity(value) {
     setSensitivity(validateSensitivity(value));
+  }
+
+  function changeSound(enabled) {
+    setSoundEnabled(enabled);
+    if (!enabled) microphone.stopAlert();
   }
 
   function startClassroom() {
@@ -111,7 +117,7 @@ export default function App() {
       <section className="intro-strip" aria-label="Propósito de la aplicación"><p className="eyebrow">Herramienta de observación</p><p className="intro-copy">Una lectura aproximada para que el aula pueda verse y volver a encontrar su ritmo.</p></section>
       <nav className="mode-nav" aria-label="Modos de uso"><button className={`mode-tab ${mode === "classroom" ? "is-active" : ""}`} type="button" aria-pressed={mode === "classroom"} onClick={() => changeMode("classroom")}>01 / Aula</button><button className={`mode-tab ${mode === "mapping" ? "is-active" : ""}`} type="button" aria-pressed={mode === "mapping"} onClick={() => changeMode("mapping")}>02 / Cartografía</button></nav>
       {(message || errorMessage) && <div className="global-message" role="status" aria-live="polite">{message || errorMessage}</div>}
-      {mode === "classroom" ? <ClassroomView monitor={{ ...monitor, volume: microphone.mode === "classroom" ? Number(microphone.sample?.volume) || 0 : 0, active: microphone.active, status: classroomError || (microphone.status === "requesting" ? "Solicitando acceso al micrófono" : monitor.status) }} limit={validateLimit(limit)} sensitivity={validateSensitivity(sensitivity)} onLimit={changeLimit} onSensitivity={changeSensitivity} onStart={startClassroom} onStop={microphone.stop} onMessage={setMessage} /> : <MappingView records={validRecords} microphone={microphone} measurement={{ ...measurement, status: mappingStatus }} onStart={startMapping} onStop={microphone.stop} onRecord={addRecord} onDelete={deleteRecord} />}
+      {mode === "classroom" ? <ClassroomView monitor={{ ...monitor, volume: microphone.mode === "classroom" ? Number(microphone.sample?.volume) || 0 : 0, active: microphone.active, soundLabel: !soundEnabled ? "Sonido apagado" : microphone.soundStatus === "blocked" ? "Sonido bloqueado" : "Sonido activo", status: classroomError || (microphone.status === "requesting" ? "Solicitando acceso al micrófono" : monitor.status) }} limit={validateLimit(limit)} sensitivity={validateSensitivity(sensitivity)} soundEnabled={Boolean(soundEnabled)} onLimit={changeLimit} onSensitivity={changeSensitivity} onSound={changeSound} onStart={startClassroom} onStop={microphone.stop} onMessage={setMessage} /> : <MappingView records={validRecords} microphone={microphone} measurement={{ ...measurement, status: mappingStatus }} onStart={startMapping} onStop={microphone.stop} onRecord={addRecord} onDelete={deleteRecord} />}
     </main>
     <footer className="site-footer"><span>Ruido de aula</span><span>El sonido se analiza localmente en este dispositivo.</span></footer>
   </>;

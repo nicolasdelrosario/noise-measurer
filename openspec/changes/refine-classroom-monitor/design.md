@@ -45,7 +45,11 @@ Alternativa descartada: mostrar toda la interfaz en fullscreen. Reduce la legibi
 
 ### Alerta sonora sintetizada
 
-Al entrar en `Demasiado ruido`, el mismo `AudioContext` del micrófono generará una sola ráfaga breve de ruido filtrado tipo “shhh”. No se repetirá mientras continúe la alerta y podrá volver a sonar después de que el estado se recupere. El sonido se detendrá al detener el monitor o cambiar de modo.
+Al entrar en `Demasiado ruido`, el mismo `AudioContext` del micrófono generará una sola ráfaga breve de ruido filtrado tipo “shhh”. No se repetirá mientras continúe la alerta y podrá volver a sonar después de que el estado se recupere. El profesor podrá apagar el sonido mediante una preferencia persistente; si el navegador lo bloquea, la captura y el aviso visual continuarán y la interfaz lo informará. El sonido se detendrá al detener el monitor o cambiar de modo.
+
+### Jerarquía de alerta por contexto
+
+La vista normal mostrará una banda roja compacta, una línea superior y el estado en rojo, sin cubrir dB, emojis ni controles. Fullscreen conservará el mensaje central de gran formato. Solo ese mensaje dinámico usará `role="alert"`; los estados duplicados serán visuales para evitar anuncios repetidos por lectores de pantalla.
 
 ### Validación con Playwright
 

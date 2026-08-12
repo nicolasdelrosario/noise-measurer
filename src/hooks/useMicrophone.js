@@ -5,16 +5,23 @@ export function useMicrophone() {
   const captureRef = useRef(null);
   const requestRef = useRef(null);
   const [state, setState] = useState({ mode: null, status: "idle", sample: null, startedAt: 0, error: null });
+  const [soundStatus, setSoundStatus] = useState("ready");
 
   const stop = useCallback(() => {
     if (requestRef.current) requestRef.current.cancelled = true;
     requestRef.current = null;
     captureRef.current?.stop();
     captureRef.current = null;
+    setSoundStatus("ready");
     setState((current) => ({ ...current, mode: null, status: "stopped", sample: null }));
   }, []);
 
-  const playAlert = useCallback(() => captureRef.current?.playAlert(), []);
+  const playAlert = useCallback(async () => {
+    const played = await captureRef.current?.playAlert();
+    setSoundStatus(played === false ? "blocked" : "ready");
+    return played;
+  }, []);
+  const stopAlert = useCallback(() => captureRef.current?.stopAlert(), []);
 
   const start = useCallback(async (mode) => {
     if (captureRef.current) return;
@@ -45,5 +52,5 @@ export function useMicrophone() {
 
   useEffect(() => stop, [stop]);
 
-  return { ...state, start, stop, playAlert, active: Boolean(captureRef.current) && state.status !== "error" };
+  return { ...state, start, stop, playAlert, stopAlert, soundStatus, active: Boolean(captureRef.current) && state.status !== "error" };
 }

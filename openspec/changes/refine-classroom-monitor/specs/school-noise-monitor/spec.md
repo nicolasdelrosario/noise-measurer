@@ -38,7 +38,7 @@ La aplicación SHALL mostrar en pantalla completa el nivel actual en dB, el esta
 - **THEN** se muestra un aviso visual grande y centrado
 
 ### Requirement: Alerta sonora por transición
-La aplicación SHALL reproducir una alerta breve sintetizada cuando el estado cambie de adecuado a `Demasiado ruido`, SHALL evitar repetirla mientras continúe la misma alerta y SHALL permitir una nueva reproducción después de recuperar el nivel adecuado.
+La aplicación SHALL reproducir una alerta breve sintetizada cuando el estado cambie de adecuado a `Demasiado ruido`, SHALL evitar repetirla mientras continúe la misma alerta, SHALL permitir silenciarla mediante una preferencia persistente y SHALL mantener la alerta visual si el navegador bloquea el sonido.
 
 #### Scenario: Entrada y permanencia en alerta
 - **WHEN** el ruido sostenido activa `Demasiado ruido`
@@ -48,9 +48,23 @@ La aplicación SHALL reproducir una alerta breve sintetizada cuando el estado ca
 - **WHEN** el aula vuelve a nivel adecuado y posteriormente activa otra alerta
 - **THEN** la alerta sonora puede reproducirse nuevamente
 
+#### Scenario: Sonido apagado o bloqueado
+- **WHEN** el usuario apaga el sonido o el navegador impide reproducirlo
+- **THEN** la captura y la alerta visual continúan funcionando y la interfaz informa el estado del sonido
+
 #### Scenario: Captura compatible en navegadores WebKit
 - **WHEN** el navegador expone `webkitAudioContext` o mantiene el contexto suspendido inicialmente
 - **THEN** la aplicación continúa solicitando y analizando el micrófono sin bloquear el inicio
+
+### Requirement: Alerta visible en vista normal
+La aplicación SHALL mostrar una señal roja compacta en la tarjeta del monitor cuando el estado sea `Demasiado ruido` y SHALL reservar el mensaje central de gran formato para pantalla completa.
+
+#### Scenario: Alerta fuera de fullscreen
+- **WHEN** el monitor entra en alerta en la vista normal
+- **THEN** se muestran una banda compacta, acento rojo y estado rojo sin cubrir la lectura ni los controles
+
+### Requirement: Señal saturada explícita
+La aplicación SHALL mostrar `Señal saturada` cuando el pico del micrófono alcance el máximo, en lugar de congelar la lectura anterior.
 
 #### Scenario: Controles fullscreen en móvil
 - **WHEN** el monitor está en pantalla completa en un viewport móvil

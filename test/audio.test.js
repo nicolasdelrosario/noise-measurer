@@ -61,8 +61,8 @@ describe("MicrophoneCapture", () => {
 
     const capture = new MicrophoneCapture(() => {});
     await capture.start();
-    capture.playAlert();
-    capture.playAlert();
+    await capture.playAlert();
+    await capture.playAlert();
 
     expect(context.createBufferSource).toHaveBeenCalledTimes(1);
     expect(filter).toMatchObject({ type: "bandpass", frequency: { value: 1800 }, Q: { value: 0.7 } });
@@ -70,6 +70,15 @@ describe("MicrophoneCapture", () => {
     expect(source.stop).toHaveBeenCalledWith(2.55);
     capture.stop();
     expect(source.stop).toHaveBeenCalledTimes(2);
+  });
+
+  it("resumes before alert playback and reports blocked sound", async () => {
+    const context = { state: "suspended", resume: vi.fn().mockRejectedValue(new DOMException("blocked", "NotAllowedError")) };
+    const capture = new MicrophoneCapture(() => {});
+    capture.context = context;
+
+    await expect(capture.playAlert()).resolves.toBe(false);
+    expect(context.resume).toHaveBeenCalledTimes(1);
   });
 
   it("captures with webkitAudioContext even when resume rejects", async () => {

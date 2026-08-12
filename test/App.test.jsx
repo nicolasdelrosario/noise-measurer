@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App.jsx";
 
-const mocks = vi.hoisted(() => ({ physics: vi.fn(), playAlert: vi.fn(), emit: null }));
+const mocks = vi.hoisted(() => ({ physics: vi.fn(), playAlert: vi.fn(() => true), stopAlert: vi.fn(), emit: null }));
 vi.mock("../src/hooks/useEmojiPhysics.js", () => ({ useEmojiPhysics: mocks.physics }));
 
 vi.mock("../src/audio.js", () => ({
@@ -10,12 +10,13 @@ vi.mock("../src/audio.js", () => ({
     constructor(onLevel) { this.onLevel = onLevel; mocks.emit = onLevel; }
     async start() { this.onLevel({ level: 70, rms: 0.1, peak: 0.2, volume: 42 }); return true; }
     playAlert() { mocks.playAlert(); }
+    stopAlert() { mocks.stopAlert(); }
     stop() {}
   },
 }));
 
 describe("App", () => {
-  afterEach(() => { cleanup(); mocks.physics.mockClear(); mocks.playAlert.mockClear(); vi.restoreAllMocks(); });
+  afterEach(() => { cleanup(); mocks.physics.mockClear(); mocks.playAlert.mockClear(); mocks.stopAlert.mockClear(); vi.restoreAllMocks(); });
 
   it("opens in classroom mode", () => {
     vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn() });
@@ -53,5 +54,26 @@ describe("App", () => {
     await emit(80, 5900);
     await emit(80, 7000);
     await waitFor(() => expect(mocks.playAlert).toHaveBeenCalledTimes(2));
+  });
+
+  it("persists sound preference and stops an active alert when muted", () => {
+    vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn() });
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Iniciar monitor/i }));
+    const sound = screen.getByLabelText("Sonido de alerta");
+    expect(sound).toBeChecked();
+    fireEvent.click(sound);
+    expect(sound).not.toBeChecked();
+    expect(mocks.stopAlert).toHaveBeenCalledTimes(1);
+    expect(localStorage.setItem).toHaveBeenCalledWith("school-noise-sound", "false");
+  });
+
+  it("shows saturation instead of freezing the previous state", async () => {
+    vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn() });
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Iniciar monitor/i }));
+    await act(async () => mocks.emit({ level: 100, rms: 1, peak: 1, volume: 255 }));
+    expect(await screen.findByRole("heading", { name: "Señal saturada" })).toBeInTheDocument();
+    expect(screen.getByText("85.0")).toBeInTheDocument();
   });
 });

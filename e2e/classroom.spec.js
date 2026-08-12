@@ -29,6 +29,55 @@ test.describe("Modo aula", () => {
     await expect(page.locator(".monitor-canvas")).toHaveAttribute("data-emoji-count", /\d+/);
   });
 
+  test("shows a compact alert and sounds once per alert cycle", async ({ page }) => {
+    await page.addInitScript(() => {
+      let amplitude = 0.01;
+      let alertStarts = 0;
+      const track = { addEventListener() {}, stop() {} };
+      const analyser = {
+        fftSize: 0,
+        smoothingTimeConstant: 0,
+        get frequencyBinCount() { return this.fftSize / 2; },
+        getFloatTimeDomainData(data) { data.fill(amplitude); },
+        getByteFrequencyData(data) { data.fill(Math.round(amplitude * 100)); },
+        disconnect() {},
+      };
+      const context = {
+        state: "running",
+        currentTime: 0,
+        sampleRate: 1000,
+        destination: {},
+        createAnalyser: () => analyser,
+        createMediaStreamSource: () => ({ connect() {}, disconnect() {} }),
+        createBuffer: () => ({ getChannelData: () => new Float32Array(550) }),
+        createBufferSource: () => {
+          const source = { connect() {}, disconnect() {}, start() { alertStarts += 1; }, stop() { setTimeout(() => source.onended?.(), 0); }, onended: null };
+          return source;
+        },
+        createBiquadFilter: () => ({ connect() {}, disconnect() {}, frequency: {}, Q: {} }),
+        createGain: () => ({ connect() {}, disconnect() {}, gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} } }),
+        resume: async () => {},
+        close() {},
+      };
+      window.__setClassroomAmplitude = (value) => { amplitude = value; };
+      window.__getAlertStarts = () => alertStarts;
+      Object.defineProperty(window, "AudioContext", { configurable: true, value: class { constructor() { return context; } } });
+      Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [track] }) } });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: /Iniciar monitor/ }).click();
+    await page.evaluate(() => window.__setClassroomAmplitude(0.5));
+    await expect(page.getByRole("alert")).toBeVisible({ timeout: 4000 });
+    await expect(page.locator(".monitor-card")).toHaveAttribute("data-alert", "true");
+    await expect.poll(() => page.evaluate(() => window.__getAlertStarts())).toBe(1);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.__getAlertStarts())).toBe(1);
+    await page.evaluate(() => window.__setClassroomAmplitude(0.01));
+    await expect(page.getByRole("heading", { name: "Nivel adecuado" })).toBeVisible({ timeout: 4000 });
+    await page.evaluate(() => window.__setClassroomAmplitude(0.5));
+    await expect.poll(() => page.evaluate(() => window.__getAlertStarts()), { timeout: 4000 }).toBe(2);
+  });
+
   test("opens in the classroom monitor", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "El aula, en claro." })).toBeVisible();
@@ -45,6 +94,16 @@ test.describe("Modo aula", () => {
     await expect.poll(() => page.evaluate(() => localStorage.getItem("school-noise-sensitivity"))).toBe("80");
     await page.reload();
     await expect(page.getByLabel("Sensibilidad visual")).toHaveValue("80");
+  });
+
+  test("persists the sound preference", async ({ page }) => {
+    await page.goto("/");
+    const sound = page.getByLabel("Sonido de alerta");
+    await sound.uncheck();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("school-noise-sound"))).toBe("false");
+    await page.reload();
+    await expect(sound).not.toBeChecked();
+    await expect(page.locator(".small-note", { hasText: "Sonido apagado" })).toBeVisible();
   });
 
   test("shows monitor details in fullscreen when supported", async ({ page }, testInfo) => {
