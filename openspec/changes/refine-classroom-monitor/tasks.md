@@ -66,3 +66,11 @@
 - [x] 11.1 Organizar estado, métricas y acción de salida en una cuadrícula móvil de dos filas.
 - [x] 11.2 Respetar las áreas seguras superior, izquierda y derecha.
 - [x] 11.3 Verificar con Playwright que `Salir` permanece dentro del viewport y no se solapa con las métricas.
+
+## 12. Alerta sonora
+
+- [x] 12.1 Sintetizar una alerta breve tipo “shhh” con el `AudioContext` existente.
+- [x] 12.2 Reproducirla una sola vez por transición a `Demasiado ruido` y rearmarla al recuperar el nivel adecuado.
+- [x] 12.3 Detener el sonido al detener la captura y probar reproducción, bloqueo de solapamiento y rearmado.
+- [x] 12.4 Admitir `webkitAudioContext` y continuar la captura cuando `resume()` sea rechazado inicialmente.
+- [x] 12.5 Verificar en Playwright el inicio completo con micrófono y contexto de audio sintéticos.

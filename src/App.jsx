@@ -19,6 +19,7 @@ export default function App() {
   const [measurement, setMeasurement] = useState({ value: 30, status: "Sin iniciar", ready: false, samples: 0 });
   const redSince = useRef(0);
   const belowSince = useRef(0);
+  const alertSounded = useRef(false);
 
   const validRecords = useMemo(() => Array.isArray(records) ? records.flatMap((record) => {
     if (!record || typeof record !== "object") return [];
@@ -51,10 +52,16 @@ export default function App() {
   }, [microphone.sample, microphone.mode, microphone.startedAt, limit, monitor.alert]);
 
   useEffect(() => {
+    if (monitor.alert && !alertSounded.current) microphone.playAlert();
+    alertSounded.current = monitor.alert;
+  }, [microphone.playAlert, monitor.alert]);
+
+  useEffect(() => {
     if (!microphone.mode) {
       samplesRef.current = [];
       redSince.current = 0;
       belowSince.current = 0;
+      alertSounded.current = false;
       setMeasurement({ value: 30, status: "Detenida", ready: false, samples: 0 });
       if (mode === "classroom") setMonitor((current) => ({ ...current, alert: false, status: "Monitor detenido", stateCode: "detenido" }));
     }
@@ -112,6 +119,7 @@ export default function App() {
 
 function errorLabel(error) {
   if (error.message === "secure-context") return "Contexto no seguro";
+  if (error.message === "audio-context") return "Audio no compatible";
   if (error.name === "NotAllowedError") return "Permiso denegado";
   if (error.name === "NotFoundError") return "Micrófono no disponible";
   if (error.name === "NotReadableError") return "Micrófono ocupado";
@@ -120,6 +128,7 @@ function errorLabel(error) {
 
 function errorMessageFor(error) {
   if (error.message === "secure-context") return "El micrófono requiere HTTPS o localhost.";
+  if (error.message === "audio-context") return "Este navegador no permite analizar el audio del micrófono.";
   if (error.name === "NotAllowedError") return "Permiso denegado. Habilita el micrófono en la configuración del navegador e inténtalo nuevamente.";
   if (error.name === "NotFoundError") return "Micrófono no disponible en este dispositivo.";
   if (error.name === "NotReadableError") return "El micrófono está ocupado, se desconectó o dejó de estar disponible.";

@@ -10,14 +10,17 @@ export class MicrophoneCapture {
     this.frame = null;
     this.data = null;
     this.frequency = null;
+    this.alertSource = null;
   }
 
   async start(isActive = () => true) {
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
       throw new Error("secure-context");
     }
-    this.context = new AudioContext();
-    await this.context.resume?.();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) throw new Error("audio-context");
+    this.context = new AudioContextClass();
+    try { await this.context.resume?.(); } catch { /* Capturing can still activate a suspended context. */ }
     this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     if (!isActive()) {
       this.stop();
@@ -52,9 +55,37 @@ export class MicrophoneCapture {
     this.frame = requestAnimationFrame(() => this.sample());
   }
 
+  playAlert() {
+    if (!this.context || this.alertSource) return;
+    const duration = 0.55;
+    const buffer = this.context.createBuffer(1, Math.ceil(this.context.sampleRate * duration), this.context.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
+    const source = this.context.createBufferSource();
+    const filter = this.context.createBiquadFilter();
+    const gain = this.context.createGain();
+    const now = this.context.currentTime;
+    source.buffer = buffer;
+    filter.type = "bandpass";
+    filter.frequency.value = 1800;
+    filter.Q.value = 0.7;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.context.destination);
+    source.onended = () => { this.alertSource = null; source.disconnect(); filter.disconnect(); gain.disconnect(); };
+    this.alertSource = source;
+    source.start(now);
+    source.stop(now + duration);
+  }
+
   stop() {
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = null;
+    this.alertSource?.stop();
+    this.alertSource = null;
     this.source?.disconnect();
     this.analyser?.disconnect?.();
     this.stream?.getTracks().forEach((track) => track.stop());

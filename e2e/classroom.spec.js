@@ -1,6 +1,34 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Modo aula", () => {
+  test("starts microphone capture with a browser audio fallback", async ({ page }) => {
+    await page.addInitScript(() => {
+      const track = { addEventListener() {}, stop() {} };
+      const analyser = {
+        fftSize: 0,
+        smoothingTimeConstant: 0,
+        get frequencyBinCount() { return this.fftSize / 2; },
+        getFloatTimeDomainData(data) { data.fill(0.1); },
+        getByteFrequencyData(data) { data.fill(24); },
+        disconnect() {},
+      };
+      const context = {
+        createAnalyser: () => analyser,
+        createMediaStreamSource: () => ({ connect() {}, disconnect() {} }),
+        resume: () => Promise.reject(new DOMException("blocked", "NotAllowedError")),
+        close() {},
+      };
+      Object.defineProperty(window, "AudioContext", { configurable: true, value: undefined });
+      Object.defineProperty(window, "webkitAudioContext", { configurable: true, value: class { constructor() { return context; } } });
+      Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [track] }) } });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: /Iniciar monitor/ }).click();
+    await expect(page.getByText("micrófono activo")).toBeVisible();
+    await expect(page.locator(".db-number")).not.toHaveText("--");
+    await expect(page.locator(".monitor-canvas")).toHaveAttribute("data-emoji-count", /\d+/);
+  });
+
   test("opens in the classroom monitor", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "El aula, en claro." })).toBeVisible();

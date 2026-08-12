@@ -35,7 +35,22 @@ La aplicación SHALL mostrar en pantalla completa el nivel actual en dB, el esta
 
 #### Scenario: Alerta centrada en fullscreen
 - **WHEN** el estado cambia a `Demasiado ruido` mientras el monitor está en pantalla completa
-- **THEN** se muestra un aviso visual grande y centrado sin emitir sonido
+- **THEN** se muestra un aviso visual grande y centrado
+
+### Requirement: Alerta sonora por transición
+La aplicación SHALL reproducir una alerta breve sintetizada cuando el estado cambie de adecuado a `Demasiado ruido`, SHALL evitar repetirla mientras continúe la misma alerta y SHALL permitir una nueva reproducción después de recuperar el nivel adecuado.
+
+#### Scenario: Entrada y permanencia en alerta
+- **WHEN** el ruido sostenido activa `Demasiado ruido`
+- **THEN** se reproduce una sola alerta sonora aunque el nivel permanezca alto
+
+#### Scenario: Nueva alerta después de recuperación
+- **WHEN** el aula vuelve a nivel adecuado y posteriormente activa otra alerta
+- **THEN** la alerta sonora puede reproducirse nuevamente
+
+#### Scenario: Captura compatible en navegadores WebKit
+- **WHEN** el navegador expone `webkitAudioContext` o mantiene el contexto suspendido inicialmente
+- **THEN** la aplicación continúa solicitando y analizando el micrófono sin bloquear el inicio
 
 #### Scenario: Controles fullscreen en móvil
 - **WHEN** el monitor está en pantalla completa en un viewport móvil

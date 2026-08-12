@@ -14,6 +14,8 @@ export function useMicrophone() {
     setState((current) => ({ ...current, mode: null, status: "stopped", sample: null }));
   }, []);
 
+  const playAlert = useCallback(() => captureRef.current?.playAlert(), []);
+
   const start = useCallback(async (mode) => {
     if (captureRef.current) return;
     const request = { cancelled: false };
@@ -43,5 +45,5 @@ export function useMicrophone() {
 
   useEffect(() => stop, [stop]);
 
-  return { ...state, start, stop, active: Boolean(captureRef.current) && state.status !== "error" };
+  return { ...state, start, stop, playAlert, active: Boolean(captureRef.current) && state.status !== "error" };
 }
